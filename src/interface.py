@@ -103,6 +103,7 @@ def initial_setup(engine: Engine):
     
     if ans == "n":
         return
+        
     elif ans == "y":
         print("let's choose a voice:")
         choose_voice(engine)
