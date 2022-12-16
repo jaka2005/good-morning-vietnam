@@ -2,25 +2,27 @@ from typing import Iterable
 from pyttsx3.engine import Engine
 
 
-def initial_setup(engine: Engine):
-    ans = ask(
-        "welcome, this is the project \"good morning, vietnam\""
-        "it is created for those who are lonely, he can welcome you.\n"
-        "do you want to perform the initial setup?", ("y", "n")
-    )
-    
-    if ans == "n":
-        return
-    elif ans == "y":
-        print("let's choose a voice:")
-        choose_voice(engine)
+def test_listen(engine: Engine):
+    en_test_text = "Good morning mister James"
+    ru_test_text = "Доброе утро, Иван"
 
+    print("en: " + en_test_text)
+    engine.say(en_test_text)
+    engine.runAndWait()
 
-def ask(text, answers: Iterable[str]) -> str:
+    print("ru: " + ru_test_text)
+    engine.say(ru_test_text)
+    engine.runAndWait()
+
+def ask(text: str, answers: Iterable[str] = ("n", "y"), show_options=True) -> str:
     answer = None
 
     while answer not in answers:
-        print(text, answers, end=" ")
+        if show_options:
+            print(text, answers, end=" ")
+        else:
+            print(text, end=" ")
+        
         answer = input()
 
     return answer
@@ -38,19 +40,45 @@ def choose_voice(engine: Engine):
         engine.setProperty("voice", voices[ans - 1].id)
 
         print("listen:", voices[int(ans) - 1].name)
-        
-        en_test_text = "Good morning mister James"
-        ru_test_text = "Доброе утро, Иван"
+        test_listen(engine)
 
-        print("en: " + en_test_text)
-        engine.say(en_test_text)
-        engine.runAndWait()
-
-        print("ru: " + ru_test_text)
-        engine.say(ru_test_text)
-        engine.runAndWait()
-
-        setup = ask("Setup voice?", ("y", "n"))
-
+        setup = ask("Setup voice?")
         if setup == "n":
             engine.setProperty("voice", default_voice)
+
+def abjust_volume(engine: Engine):
+    setup = "n"
+
+    while setup != "y":
+        current_volume = engine.getProperty("volume")
+        print(
+            f"Current volume: {current_volume}\n"
+            "Press any key to listen to the test text"
+        ); input()
+
+        test_listen(engine)
+        
+        setup = ask("Are you satisfied with the volume?")
+
+        if setup == "n":
+            volume = int(
+                ask("Enter the desired volume# (from 0 to 100)",
+                (i for i in range(101)), show_options=False)
+            ) / 100
+
+            engine.setProperty("volume", volume)
+
+def initial_setup(engine: Engine):
+    ans = ask(
+        "welcome, this is the project \"good morning, vietnam\""
+        "it is created for those who are lonely, he can welcome you.\n"
+        "do you want to perform the initial setup?"
+    )
+    
+    if ans == "n":
+        return
+    elif ans == "y":
+        print("let's choose a voice:")
+        choose_voice(engine)
+        print("now let's adjust the volume:")
+        abjust_volume(engine)
