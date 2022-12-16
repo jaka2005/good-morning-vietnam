@@ -53,7 +53,7 @@ def abjust_volume(engine: Engine):
         current_volume = engine.getProperty("volume")
         print(
             f"Current volume: {current_volume}\n"
-            "Press any key to listen to the test text"
+            "Press any key to listen to the test text."
         ); input()
 
         test_listen(engine)
@@ -62,11 +62,37 @@ def abjust_volume(engine: Engine):
 
         if setup == "n":
             volume = int(
-                ask("Enter the desired volume# (from 0 to 100)",
+                ask("Enter the desired volume. (from 0 to 100)",
                 (i for i in range(101)), show_options=False)
             ) / 100
 
             engine.setProperty("volume", volume)
+
+def setup_rate(engine: Engine):
+    setup = "n"
+
+    while setup != "y":
+        current_rate = engine.getProperty("rate")
+        print(
+            f"Current volume: {current_rate} words per minute.\n"
+            "Press any key to listen to the test text."
+        ); input()
+
+        test_listen(engine)
+        
+        setup = ask("Are you satisfied with the rate?")
+
+        if setup == "n":
+            rate = ""
+            while type(rate) != "int":
+                try:
+                    rate = int(
+                        ask("Enter the desired rate. (in words per minute)")
+                    )
+                except ValueError:
+                    pass
+
+            engine.setProperty("rate", rate)
 
 def initial_setup(engine: Engine):
     ans = ask(
@@ -82,3 +108,6 @@ def initial_setup(engine: Engine):
         choose_voice(engine)
         print("now let's adjust the volume:")
         abjust_volume(engine)
+        print("now let's set up the rate:")
+        setup_rate(engine)
+        
