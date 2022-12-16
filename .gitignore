@@ -1,3 +1,4 @@
 env
 config.ini
 goodmorning.cmd
+__pycache__/

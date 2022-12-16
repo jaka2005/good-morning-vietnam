@@ -1,18 +1,21 @@
 from typing import Iterable
 from pyttsx3.engine import Engine
 
+from src.config import ConfigReader
+
 
 def test_listen(engine: Engine):
     en_test_text = "Good morning mister James"
     ru_test_text = "Доброе утро, Иван"
 
-    print("en: " + en_test_text)
+    print("\nen: " + en_test_text)
     engine.say(en_test_text)
     engine.runAndWait()
 
     print("ru: " + ru_test_text)
     engine.say(ru_test_text)
     engine.runAndWait()
+    print()
 
 def ask(text: str, answers: Iterable[str] = ("n", "y"), show_options=True) -> str:
     answer = None
@@ -27,33 +30,38 @@ def ask(text: str, answers: Iterable[str] = ("n", "y"), show_options=True) -> st
 
     return answer
 
-def choose_voice(engine: Engine):
+def choose_voice(engine: Engine, config: ConfigReader):
+    voices = engine.getProperty('voices')
+    
     setup = "n"
     while setup != "y":
-        voices = engine.getProperty('voices')
-        default_voice = engine.getProperty("voice")
-
         for i, v in enumerate(voices, 1):
             print(str(i) + " - " + v.name)
-            
-        ans = ask("Enter the voice number", (i + 1 for i in range(len(voices))))
-        engine.setProperty("voice", voices[ans - 1].id)
+        
+        print()
+        ans = int(ask(
+            "Enter the voice number",
+            tuple(str(i + 1) for i in range(len(voices)))
+        ))
+        voice = voices[ans - 1]
+        engine.setProperty("voice", voice.id)
 
-        print("listen:", voices[int(ans) - 1].name)
+        print("\nlisten:", voice.name)
         test_listen(engine)
 
         setup = ask("Setup voice?")
-        if setup == "n":
-            engine.setProperty("voice", default_voice)
+        print()
+    
+    config.voice = voice.id
 
-def abjust_volume(engine: Engine):
+def abjust_volume(engine: Engine, config: ConfigReader):
     setup = "n"
+    current_volume = engine.getProperty("volume")
 
     while setup != "y":
-        current_volume = engine.getProperty("volume")
         print(
-            f"Current volume: {current_volume}\n"
-            "Press any key to listen to the test text."
+            f"Current volume: {int(current_volume*100)}\n"
+            "Press any key to listen to the test text.", end=" "
         ); input()
 
         test_listen(engine)
@@ -61,21 +69,26 @@ def abjust_volume(engine: Engine):
         setup = ask("Are you satisfied with the volume?")
 
         if setup == "n":
-            volume = int(
+            current_volume = int(
                 ask("Enter the desired volume. (from 0 to 100)",
-                (i for i in range(101)), show_options=False)
+                tuple(str(i) for i in range(101)), show_options=False)
             ) / 100
 
-            engine.setProperty("volume", volume)
+            engine.setProperty("volume", current_volume)
+            print()
 
-def setup_rate(engine: Engine):
+    config.volume = current_volume
+
+    
+
+def setup_rate(engine: Engine, config: ConfigReader):
     setup = "n"
+    current_rate = engine.getProperty("rate")
 
     while setup != "y":
-        current_rate = engine.getProperty("rate")
         print(
             f"Current volume: {current_rate} words per minute.\n"
-            "Press any key to listen to the test text."
+            "Press any key to listen to the test text.", end=""
         ); input()
 
         test_listen(engine)
@@ -84,17 +97,22 @@ def setup_rate(engine: Engine):
 
         if setup == "n":
             rate = ""
-            while type(rate) != "int":
+            while type(rate) != int:
                 try:
                     rate = int(
-                        ask("Enter the desired rate. (in words per minute)")
+                        input("Enter the desired rate (in words per minute): ")
                     )
                 except ValueError:
                     pass
 
             engine.setProperty("rate", rate)
+            current_rate = rate
+        
+        print()
 
-def initial_setup(engine: Engine):
+    config.rate = current_rate
+
+def initial_setup(engine: Engine, config: ConfigReader):
     ans = ask(
         "welcome, this is the project \"good morning, vietnam\""
         "it is created for those who are lonely, he can welcome you.\n"
@@ -103,12 +121,12 @@ def initial_setup(engine: Engine):
     
     if ans == "n":
         return
-        
+
     elif ans == "y":
-        print("let's choose a voice:")
-        choose_voice(engine)
-        print("now let's adjust the volume:")
-        abjust_volume(engine)
-        print("now let's set up the rate:")
-        setup_rate(engine)
+        print("\nlet's choose a voice:")
+        choose_voice(engine, config)
+        print("\nnow let's adjust the volume:")
+        abjust_volume(engine, config)
+        print("\nnow let's set up the rate:")
+        setup_rate(engine, config)
         

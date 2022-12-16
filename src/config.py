@@ -18,9 +18,13 @@ class ConfigReader():
             self.__dict__["voice"] = engine.getProperty("voice")
             config.set(section, "voice", self.voice)
             self.__dict__["rate"] = engine.getProperty("rate")
-            config.set(section, "rate", self.rate)
+            config.set(section, "rate", str(self.rate))
             self.__dict__["volume"] = engine.getProperty("volume")
-            config.set(section, "volume", self.volume)
+            config.set(section, "volume", str(self.volume))
+
+            with open(config_path, 'w') as configfile:
+                config.write(configfile)
+                
         else:
             self.__dict__["last_time"] = config.getint(section, "last_time")
             self.__dict__["voice"] = config.get(section, "voice")
@@ -32,8 +36,9 @@ class ConfigReader():
         self.__dict__["monday"] = DayTimeConfig(config, "MONDAY")
         self.__dict__["evening"] = DayTimeConfig(config, "EVENING")
 
+        self.__dict__["_config_path"] = config_path
         self.__dict__["_section"] = section
-        self.__dict__["_config "]= config
+        self.__dict__["_config"] = config
 
     def __setattr__(self, __name: str, __value: Any) -> None:
         if __name in ("evening", "monday", "morning", "night", "_section", "_config"):
@@ -41,10 +46,14 @@ class ConfigReader():
         
         attr_type = type(self.__dict__[__name])
         if type(__value) == attr_type:
-            self._config.set(self._section, __name, __value)
+            self._config.set(self._section, __name, str(__value))
             self.__dict__[__name] == __value
         else:
             raise TypeError(f"{self.__class__}.{__name} must be of type {attr_type}")
+
+    def save(self):
+        with open(self._config_path, 'w') as configfile:
+            self._config.write(configfile)
 
 class DayTimeConfig():
     def __init__(self, config: configparser.ConfigParser, section: str):
