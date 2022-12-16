@@ -6,7 +6,7 @@ def initial_setup(engine: Engine):
     ans = ask(
         "welcome, this is the project \"good morning, vietnam\""
         "it is created for those who are lonely, he can welcome you.\n"
-        "d1o you want to perform the initial setup?", ("y", "n")
+        "do you want to perform the initial setup?", ("y", "n")
     )
     
     if ans == "n":
