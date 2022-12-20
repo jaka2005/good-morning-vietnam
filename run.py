@@ -1,19 +1,37 @@
 import pyttsx3
-import datetime
+from datetime import datetime, timedelta
+
 from src.config import ConfigReader, CONFIG_PATH
+from src.greeting import greet
 from src.interface import initial_setup
 
 
-if __name__ == "__main__":
+def main():
     engine = pyttsx3.init()
-    now = datetime.datetime.now()
     config = ConfigReader(CONFIG_PATH, engine)
 
     if config.is_primary_start:
         initial_setup(engine, config)
         config.is_primary_start = False
-        config.save()
     else:
+        print("apply")
         engine.setProperty("voice", config.voice)
-        engine.setProperty("volume", str(config.volume))
-        engine.setProperty("rate", str(config.rate))
+        engine.setProperty("volume", config.volume)
+        engine.setProperty("rate", config.rate)
+
+    now = datetime.now()
+    if config.last_time == datetime.min:
+        delta_time = timedelta.min
+    else:
+        delta_time = now - config.last_time
+
+    if delta_time == timedelta.min or delta_time > timedelta(hours=4):
+        greet(engine, config, delta_time)
+
+        config.last_time = now
+    
+    config.save()
+
+
+if __name__ == "__main__":
+    main()
