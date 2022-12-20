@@ -4,7 +4,7 @@ from pyttsx3.engine import Engine
 from datetime import datetime
 
 
-CONFIG_PATH = "./config.ini"
+CONFIG_PATH = "config.ini"
 
 def parse_iso_format(s):
     return datetime.fromisoformat(s)

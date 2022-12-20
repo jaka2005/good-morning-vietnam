@@ -1,4 +1,5 @@
 import pyttsx3
+from pathlib import Path
 from datetime import datetime, timedelta
 
 from src.config import ConfigReader, CONFIG_PATH
@@ -7,14 +8,15 @@ from src.interface import initial_setup
 
 
 def main():
+    path_to_config = Path(__file__).parent.joinpath(CONFIG_PATH).resolve()
+
     engine = pyttsx3.init()
-    config = ConfigReader(CONFIG_PATH, engine)
+    config = ConfigReader(path_to_config, engine)
 
     if config.is_primary_start:
         initial_setup(engine, config)
         config.is_primary_start = False
     else:
-        print("apply")
         engine.setProperty("voice", config.voice)
         engine.setProperty("volume", config.volume)
         engine.setProperty("rate", config.rate)
